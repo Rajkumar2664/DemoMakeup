@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -24,6 +24,7 @@ migrate = Migrate(app, db)
 CORS(app)
 jwt = JWTManager(app)
 
+# ============ MODELS ============
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -44,23 +45,7 @@ class User(db.Model):
 class Artist(db.Model):
     __tablename__ = 'artists'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    specialty = db.Column(db.String(100), nullable=False)
-    experience_years = db.Column(db.Integer, nullable=False)
-    bio = db.Column(db.Text)
-    rating = db.Column(db.Float, default=0.0)
-    total_reviews = db.Column(db.Integer, default=0)
-    price_per_hour = db.Column(db.Numeric(10, 2), nullable=False)
-    is_available = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user = db.relationship('User', backref='artist_profile')
-
-class Booking(db.Model):
-    __tablename__ = 'bookings'
-    id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False)
-    service_type = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db    service_type = db.Column(db.String(100), nullable=False)
     booking_date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)

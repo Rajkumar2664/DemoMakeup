@@ -26,6 +26,7 @@ services:
         condition: on-failure
 
   app:
+    build: .
     image: rajubingi2664/demomakeup:frontend
     ports:
       - "5000:5000"
@@ -45,7 +46,7 @@ services:
     command: gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app
 
   celery:
-    image: makeup-booking-app:latest
+    image: rajubingi2664/demomakeup:frontend
     environment:
       DATABASE_URL: postgresql://makeup_user:makeup_password@db:5432/makeup_booking
       REDIS_URL: redis://redis:6379/0
@@ -60,4 +61,4 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
+  redis_data:  redis_data:

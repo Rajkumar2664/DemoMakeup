@@ -27,7 +27,6 @@ services:
 
   app:
     image: makeup-booking-app:latest
-    build: .
     ports:
       - "5000:5000"
     environment:
@@ -43,13 +42,19 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
     command: >
-      sh -c "flask db upgrade &&
-      gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app"
+      sh -c "echo 'Waiting for database...' &&
+             sleep 10 &&
+             echo 'Running migrations...' &&
+             flask db upgrade || echo 'Migration skipped' &&
+             echo 'Starting application...' &&
+             gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app"
 
   celery:
     image: makeup-booking-app:latest
-    build: .
     environment:
       DATABASE_URL: postgresql://makeup_user:makeup_password@db:5432/makeup_booking
       REDIS_URL: redis://redis:6379/0
@@ -60,7 +65,13 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
-    command: celery -A app.celery worker --loglevel=info
+    command: >
+      sh -c "sleep 15 &&
+             celery -A app.celery worker --loglevel=info"
+
+volumes:
+  postgres_data:
+  redis_data:    command: celery -A app.celery worker --loglevel=info
 
 volumes:
   postgres_data:

@@ -9,45 +9,28 @@ services:
       POSTGRES_DB: makeup_booking
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    deploy:
-      restart_policy:
-        condition: on-failure
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
-    deploy:
-      restart_policy:
-        condition: on-failure
 
   app:
-    image: makeup-booking-app:latest  # Build and push to registry for Swarm
+    build: .
     ports:
       - "5000:5000"
     environment:
       DATABASE_URL: postgresql://makeup_user:makeup_password@db:5432/makeup_booking
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-jwt-secret-key}
-      FLASK_ENV: production
+      SECRET_KEY: dev-secret-key
+      JWT_SECRET_KEY: dev-jwt-key
+      FLASK_ENV: development
     depends_on:
       - db
       - redis
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
-      update_config:
-        parallelism: 1
-        delay: 10s
 
   celery:
-    image: makeup-booking-app:latest
+    build: .
     environment:
       DATABASE_URL: postgresql://makeup_user:makeup_password@db:5432/makeup_booking
       REDIS_URL: redis://redis:6379/0
@@ -55,12 +38,10 @@ services:
       - db
       - redis
     command: celery -A app.celery worker --loglevel=info
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
 
 volumes:
+  postgres_data:
+  redis_data:volumes:
   postgres_data:
   redis_data:      REDIS_URL: redis://redis:6379/0
       MAIL_SERVER: ${MAIL_SERVER:-smtp.gmail.com}

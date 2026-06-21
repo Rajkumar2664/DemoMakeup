@@ -45,13 +45,7 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-    command: >
-      sh -c "echo 'Waiting for database...' &&
-             sleep 10 &&
-             echo 'Running migrations...' &&
-             flask db upgrade || echo 'Migration skipped' &&
-             echo 'Starting application...' &&
-             gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app"
+    command: /bin/sh -c "echo 'Waiting for database...' && sleep 10 && echo 'Running migrations...' && flask db upgrade || echo 'Migration skipped' && echo 'Starting application...' && gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app"
 
   celery:
     image: makeup-booking-app:latest
@@ -61,6 +55,15 @@ services:
     depends_on:
       - db
       - redis
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    command: /bin/sh -c "sleep 15 && celery -A app.celery worker --loglevel=info"
+
+volumes:
+  postgres_data:
+  redis_data:      - redis
     deploy:
       replicas: 1
       restart_policy:
